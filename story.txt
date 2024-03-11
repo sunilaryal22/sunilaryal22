@@ -1,0 +1,282 @@
+{
+  "cells": [
+    {
+      "cell_type": "markdown",
+      "source": [
+        "# Large Language Model Challenge: LLM StoryBot\n",
+        "\n",
+        "## Data Science Sprint 15 Challenge\n",
+        "\n",
+        "### Challenge Objectives 🧾\n",
+        "\n",
+        "You should be able to...\n",
+        "\n",
+        "1. Implement an LLM (either local or API based)\n",
+        "2. Customize the behavior of an LLM\n",
+        "3. Use a custom LLM in your terminal\n",
+        "\n",
+        "You may use any Python libraries that can be installed via pip, including the Python standard library. Please do not use any websites like ChatGPT to write your stories. You are welcome to use them to help write the code for your custom model, though! Pro Tip: ask them to act as teachers to help you learn rather than just getting them to write the code for you."
+      ],
+      "metadata": {
+        "collapsed": false,
+        "id": "aJVBeRLHv5Il"
+      }
+    },
+    {
+      "cell_type": "markdown",
+      "source": [
+        "### Part 1 - Choose an LLM Model 🔍\n",
+        "\n",
+        "The easy choice here is OpenAi's API version of GPT, but it requires a paid account. If you want a higher-level challenge, choose an open-source model that runs locally. Although GPT is easier to set up and performs better than open-source models, you will learn way more if you implement a local open-source model."
+      ],
+      "metadata": {
+        "collapsed": false,
+        "id": "GY2UjCqyv5In"
+      }
+    },
+    {
+      "cell_type": "code",
+      "source": [
+        "!pip install transformers"
+      ],
+      "metadata": {
+        "id": "k28dZ9ZmcWBF",
+        "outputId": "34d35a60-d951-4439-dccc-87e1e7654006",
+        "colab": {
+          "base_uri": "https://localhost:8080/"
+        }
+      },
+      "execution_count": 8,
+      "outputs": [
+        {
+          "output_type": "stream",
+          "name": "stdout",
+          "text": [
+            "Requirement already satisfied: transformers in /usr/local/lib/python3.10/dist-packages (4.37.2)\n",
+            "Requirement already satisfied: filelock in /usr/local/lib/python3.10/dist-packages (from transformers) (3.13.1)\n",
+            "Requirement already satisfied: huggingface-hub<1.0,>=0.19.3 in /usr/local/lib/python3.10/dist-packages (from transformers) (0.20.3)\n",
+            "Requirement already satisfied: numpy>=1.17 in /usr/local/lib/python3.10/dist-packages (from transformers) (1.25.2)\n",
+            "Requirement already satisfied: packaging>=20.0 in /usr/local/lib/python3.10/dist-packages (from transformers) (23.2)\n",
+            "Requirement already satisfied: pyyaml>=5.1 in /usr/local/lib/python3.10/dist-packages (from transformers) (6.0.1)\n",
+            "Requirement already satisfied: regex!=2019.12.17 in /usr/local/lib/python3.10/dist-packages (from transformers) (2023.12.25)\n",
+            "Requirement already satisfied: requests in /usr/local/lib/python3.10/dist-packages (from transformers) (2.31.0)\n",
+            "Requirement already satisfied: tokenizers<0.19,>=0.14 in /usr/local/lib/python3.10/dist-packages (from transformers) (0.15.2)\n",
+            "Requirement already satisfied: safetensors>=0.4.1 in /usr/local/lib/python3.10/dist-packages (from transformers) (0.4.2)\n",
+            "Requirement already satisfied: tqdm>=4.27 in /usr/local/lib/python3.10/dist-packages (from transformers) (4.66.2)\n",
+            "Requirement already satisfied: fsspec>=2023.5.0 in /usr/local/lib/python3.10/dist-packages (from huggingface-hub<1.0,>=0.19.3->transformers) (2023.6.0)\n",
+            "Requirement already satisfied: typing-extensions>=3.7.4.3 in /usr/local/lib/python3.10/dist-packages (from huggingface-hub<1.0,>=0.19.3->transformers) (4.9.0)\n",
+            "Requirement already satisfied: charset-normalizer<4,>=2 in /usr/local/lib/python3.10/dist-packages (from requests->transformers) (3.3.2)\n",
+            "Requirement already satisfied: idna<4,>=2.5 in /usr/local/lib/python3.10/dist-packages (from requests->transformers) (3.6)\n",
+            "Requirement already satisfied: urllib3<3,>=1.21.1 in /usr/local/lib/python3.10/dist-packages (from requests->transformers) (2.0.7)\n",
+            "Requirement already satisfied: certifi>=2017.4.17 in /usr/local/lib/python3.10/dist-packages (from requests->transformers) (2024.2.2)\n"
+          ]
+        }
+      ]
+    },
+    {
+      "cell_type": "code",
+      "source": [
+        "from transformers import GPT2LMHeadModel, GPT2Tokenizer\n",
+        "\n",
+        "tokenizer = GPT2Tokenizer.from_pretrained(\"gpt2\")\n",
+        "model = GPT2LMHeadModel.from_pretrained(\"gpt2\")"
+      ],
+      "metadata": {
+        "id": "mhWox3DcccM9"
+      },
+      "execution_count": 9,
+      "outputs": []
+    },
+    {
+      "cell_type": "markdown",
+      "source": [
+        "### Part 2 - Implement an LLM Model as a Brilliant Storyteller Bot 🤖\n",
+        "\n",
+        "Design an LLM that acts like a brilliant storyteller by having it generate a story based on user input. The stories should be about 1000 words in length or longer.\n",
+        "\n",
+        "Be mindful of the context window of the model you choose. The system_prompt, user_prompt, and output combined need to fit inside one context window. See the documentation for the model you're using for more details. Pro Tip: choose a model with good documentation! 😏"
+      ],
+      "metadata": {
+        "collapsed": false,
+        "id": "t7cG2EkVv5Io"
+      }
+    },
+    {
+      "cell_type": "code",
+      "execution_count": 10,
+      "outputs": [],
+      "source": [
+        "class StoryBot:\n",
+        "\n",
+        "    def __init__(self):\n",
+        "        self.tokenizer = GPT2Tokenizer.from_pretrained(\"gpt2\")\n",
+        "        self.model = GPT2LMHeadModel.from_pretrained(\"gpt2\")\n",
+        "\n",
+        "    def __call__(self, user_prompt: str) -> str:\n",
+        "        # Encode the user prompt\n",
+        "        encoded_prompt = self.tokenizer.encode(user_prompt, return_tensors='pt')\n",
+        "\n",
+        "        # Generate a sequence of tokens\n",
+        "        output = self.model.generate(encoded_prompt, max_length=1000, do_sample=True)\n",
+        "\n",
+        "        # Decode the output to a string\n",
+        "        story = self.tokenizer.decode(output[0], skip_special_tokens=True)\n",
+        "\n",
+        "        return story"
+      ],
+      "metadata": {
+        "id": "6g5S3LK_v5Io"
+      }
+    },
+    {
+      "cell_type": "markdown",
+      "source": [
+        "### Part 3 - StoryBot Testing 🧪\n",
+        "\n",
+        "Have your bot write a few stories and evaluate them. Can alterations be made to the model's parameters to improve the results?"
+      ],
+      "metadata": {
+        "collapsed": false,
+        "id": "SxssCK_yv5Io"
+      }
+    },
+    {
+      "cell_type": "code",
+      "execution_count": 11,
+      "outputs": [
+        {
+          "output_type": "stream",
+          "name": "stderr",
+          "text": [
+            "The attention mask and the pad token id were not set. As a consequence, you may observe unexpected behavior. Please pass your input's `attention_mask` to obtain reliable results.\n",
+            "Setting `pad_token_id` to `eos_token_id`:50256 for open-end generation.\n"
+          ]
+        },
+        {
+          "output_type": "stream",
+          "name": "stdout",
+          "text": [
+            "Once upon a time in a town far away, a woman was called to inquire if the man could get her milk or coffee alone. The man said, \"You can stay home for an hour and a half if you want to save.\"\n",
+            "\n",
+            "I was looking into this new information and had no idea who had suggested it to me before. I must have known the circumstances better at the time. The man was a man of the city and he had worked as a miner and an agricultural labourer.\n",
+            "\n",
+            "I had given him a card from my housekeeper who knew mine and had told him one bit of the story of Mrs. De Vries from the story of a story the farmer reported in the story and about which I have been given some information. I also believed it to be a joke that Mrs. De Vries had come to the story to give it a good mention because by my word the story was quite correct and the man had been getting water under his feet. But I felt a bit sorry for him. He was of the neighbourhood to the north of Mr. Coe, he was very much in love for me and could not resist coming to my doorstep whenever I was tired of his noisy chatter.\n",
+            "\n",
+            "It was about 9 at night when he picked me up. I began to tell him the story and he then said to me, \"Miss De Vries, go back the next night in the shop by the fire to see if you can find anybody you may know.\" The story I told Mr. Coe was so accurate that in the afternoon the gentleman told me to call up his little business friend.\n",
+            "\n",
+            "The man took me to the shop and I stood by quietly for about ten minutes until I found him by the fire on the front doorstep of my house. He sat and watched me while I took my milk. It was a pleasant feeling to see one's husband take part in his business while I, a little girl, kept looking after him and talking with him.\n",
+            "\n",
+            "We parted on the front doorstep.\n",
+            "\n",
+            "Mrs. De Vries had been taken in the house, but my dear old housekeeper was at the front.\n",
+            "\n",
+            "She would take him up to the bar on Old Street, and he would sit and cook for me.\n",
+            "\n",
+            "I put this story to the people of the town. They all looked up at me and said, \"Come, Mrs. De Vries, and find out for yourself. Then you may become a good business lady again, your housekeeping and a lot else.\"\n",
+            "\n",
+            "I felt the man's gratitude that I had a wife. He did not want to see my poor little world, but I did not let him go away without a complaint and found my wife now and there. It was very very good news to me. My old home was now in the heart of the town and that has changed my life and led to my work. I am proud of it.\n",
+            "\n",
+            "A few days ago I went to my shop at the same time and found Mrs. De Vries taking a milk order. I began to wonder what it was. I could not make out how much she was giving for it. I then realized that it was only an order for one item and I thought it ridiculous that the merchant would have to show me if she really had any idea how much it would cost.\n",
+            "\n",
+            "I called the business friend and went into his house, where they took him up to the kitchen and looked at food and drink and had a quick conversation. He went to his room. As we were there, two servants went back through his room and a housekeeper came in with a box containing the milk as it was delivered home.\n",
+            "\n",
+            "She was delighted to see Mrs. De Vries. The other servants were a very good neighbour and the housekeeper had been so gentle as to have let me take to her and she did not know how to put the milk in my old bottle. I looked at the milk box for a long time and saw what I was looking for.\n",
+            "\n",
+            "It was one of those rare cases where I was taken into the house of a bad person or man, and at first there was no emotion in sight but only gratitude.\n",
+            "\n",
+            "It was not so soon as I was able to get it home. It was still in a jar or bottle and Mr. Coe had had it with him for ten different years and my life had been changed forever. I could not understand why but I thought to myself, \"Why did you go to so great a business? I am glad now that you have married.\"\n",
+            "\n",
+            "I told him nothing because I was at the time a bad person. He asked me if I knew how much milk for her and I replied in a polite, \"Not much,\" which was very polite. I told him all the facts, but he made an inquiry and I was told that the milk was really from\n"
+          ]
+        }
+      ],
+      "source": [
+        "story_bot = StoryBot()\n",
+        "\n",
+        "# Generate a story with the user prompt \"Once upon a time in a town far away\"\n",
+        "story = story_bot(\"Once upon a time in a town far away\")\n",
+        "print(story)"
+      ],
+      "metadata": {
+        "id": "zaQdwdrOv5Ip",
+        "outputId": "cfeac4d5-c75f-4e3b-c01c-9caef17385f1",
+        "colab": {
+          "base_uri": "https://localhost:8080/"
+        }
+      }
+    },
+    {
+      "cell_type": "markdown",
+      "source": [
+        "### Part 4 - Story Submission 📜\n",
+        "\n",
+        "Have your bot generate at least three stories and choose your favorite to upload for evaluation. The story should be 1000 words or more and be purely AI-generated. Please do not edit the story in any way. To submit your Sprint Challenge, upload your `story.txt` file by itself.\n",
+        "\n",
+        "#### Stretch Goals (Optional) 🏄\n",
+        "\n",
+        "- Have the call method of the bot output a story as a txt file rather than printing to the terminal, so you don't need to copy/paste for submission.\n",
+        "- Give your bot a distinct personality on top of its ability to write captivating stories.\n",
+        "- Implement a memory module for your bot. A memory module would give you the ability to have it do multiple revisions of the same story based on your input.\n",
+        "- Implement an API (Flask or FastAPI) to interact with your bot."
+      ],
+      "metadata": {
+        "collapsed": false,
+        "id": "ZT00blFLv5Ip"
+      }
+    },
+    {
+      "cell_type": "code",
+      "source": [
+        "from flask import Flask, request\n",
+        "app = Flask(__name__)\n",
+        "\n",
+        "@app.route('/generate', methods=['POST'])\n",
+        "def generate():\n",
+        "    prompt = request.json['prompt']\n",
+        "    story = story_bot(prompt)\n",
+        "    return story"
+      ],
+      "metadata": {
+        "id": "8vZU14DVd4qO"
+      },
+      "execution_count": 12,
+      "outputs": []
+    },
+    {
+      "cell_type": "markdown",
+      "source": [
+        "### Congratulations! 🥳\n",
+        "\n",
+        "Thank you for your hard work, and congratulations!!! You've learned a lot, and you should proudly call yourself a Data Scientist.\n"
+      ],
+      "metadata": {
+        "collapsed": false,
+        "id": "_Qb9wOe7v5Ip"
+      }
+    }
+  ],
+  "metadata": {
+    "kernelspec": {
+      "display_name": "Python 3",
+      "language": "python",
+      "name": "python3"
+    },
+    "language_info": {
+      "codemirror_mode": {
+        "name": "ipython",
+        "version": 2
+      },
+      "file_extension": ".py",
+      "mimetype": "text/x-python",
+      "name": "python",
+      "nbconvert_exporter": "python",
+      "pygments_lexer": "ipython2",
+      "version": "2.7.6"
+    },
+    "colab": {
+      "provenance": []
+    }
+  },
+  "nbformat": 4,
+  "nbformat_minor": 0
+}
